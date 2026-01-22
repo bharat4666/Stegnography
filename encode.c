@@ -152,7 +152,7 @@ Status encode_byte_to_lsb(char data,char *image_buffer)
     }
 }
 
-Status encode_size_to_lsb(int size, EncodeInfo *encodeInfo)
+Status encode_size_to_lsb(long size, EncodeInfo *encodeInfo)
 {
     char arr[32];
     fread(arr,32,1,encodeInfo->fptr_src_image);
@@ -175,12 +175,37 @@ Status encode_secret_file_extn(char *file_extn, EncodeInfo *encodeInfo)
     return e_success;
 }
 
+Status encode_secret_file_size(long file_size, EncodeInfo *encodeInfo)
+{
+    encode_size_to_lsb(file_size,encodeInfo);
+    return e_success;
+}
+
+Status encode_secret_file_data(EncodeInfo *encodeInfo)
+{
+    char str[encodeInfo->size_secret_file];
+    fseek(encodeInfo->fptr_secret,0,SEEK_SET);
+    fread(str,encodeInfo->size_secret_file,1,encodeInfo->fptr_secret);
+    encode_data_to_image(str,encodeInfo->size_secret_file,encodeInfo->fptr_src_image,encodeInfo->fptr_stego_image);
+    return e_success;
+}
+
 Status copy_bmp_header(FILE *fptr_src_image, FILE *fptr_dest_image)
 {
     fseek(fptr_src_image,0,SEEK_SET);
     char str[54];
     fread(str,54,1,fptr_src_image);
     fwrite(str,54,1,fptr_dest_image);
+    return e_success;
+}
+
+Status copy_remaining_img_data(FILE *fptr_src, FILE *fptr_dest)
+{
+    char ch;
+    while(fread(&ch,1,1,fptr_src) > 0)
+    {
+        fwrite(&ch,1,1,fptr_dest);
+    }
     return e_success;
 }
 
